@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head><meta name="generator" content="Hexo 3.8.0">
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="description" content="这里记录了如何用google cloud部署一个kafka集群，然后在本地连接它（用代码或者kafka包里的脚本）。 有一些小的坑，记录一下。 1、在google cloud platform里面点击MarketPlace，然后搜索kafka，可以看到有很多解决方案，选择Google click to deploy。 2、然后gc会自动创建一个vm，并且在里面跑一个kafka集群。你可以利用gcl">
+<meta property="og:type" content="article">
+<meta property="og:title" content="如何在google cloud上新建kafka集群并且远程连接producer">
+<meta property="og:url" content="http://yoursite.com/2018/12/31/google-cloud-kafka-remote-producer/index.html">
+<meta property="og:site_name" content="Nslamgg&#39;s blog">
+<meta property="og:description" content="这里记录了如何用google cloud部署一个kafka集群，然后在本地连接它（用代码或者kafka包里的脚本）。 有一些小的坑，记录一下。 1、在google cloud platform里面点击MarketPlace，然后搜索kafka，可以看到有很多解决方案，选择Google click to deploy。 2、然后gc会自动创建一个vm，并且在里面跑一个kafka集群。你可以利用gcl">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-02-03T15:51:15.728Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="如何在google cloud上新建kafka集群并且远程连接producer">
+<meta name="twitter:description" content="这里记录了如何用google cloud部署一个kafka集群，然后在本地连接它（用代码或者kafka包里的脚本）。 有一些小的坑，记录一下。 1、在google cloud platform里面点击MarketPlace，然后搜索kafka，可以看到有很多解决方案，选择Google click to deploy。 2、然后gc会自动创建一个vm，并且在里面跑一个kafka集群。你可以利用gcl">
+    
+    
+        
+          
+              <link rel="shortcut icon" href="/images/favicon.ico">
+          
+        
+        
+          
+            <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+          
+        
+        
+          
+            <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+          
+        
+    
+    <!-- title -->
+    <title>如何在google cloud上新建kafka集群并且远程连接producer</title>
+    <!-- styles -->
+    <link rel="stylesheet" href="/css/style.css">
+    <!-- persian styles -->
+    
+      <link rel="stylesheet" href="/css/rtl.css">
+    
+    <!-- rss -->
+    
+    
+</head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fas fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+         
+          <li><a href="/">首页</a></li>
+         
+          <li><a href="/about/">关于</a></li>
+         
+          <li><a href="/categories/随笔">随笔</a></li>
+         
+          <li><a href="/categories/记坑">记坑</a></li>
+         
+          <li><a href="/archives/">归档</a></li>
+        
+      </ul>
+    </span>
+    <br>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" href="/2019/01/02/intellij-idea-e6-97-a0-e6-b3-95-e8-ae-be-e7-bd-aeprogram-language-level-e5-88-b010/"><i class="fas fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" href="/2018/07/25/shi-t-summary/"><i class="fas fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" href="#"><i class="fas fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">上一篇</span>
+      <span id="i-next" class="info" style="display:none;">下一篇</span>
+      <span id="i-top" class="info" style="display:none;">返回顶部</span>
+      <span id="i-share" class="info" style="display:none;">分享文章</span>
+    </span>
+    <br>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" href="http://www.facebook.com/sharer.php?u=http://yoursite.com/2018/12/31/google-cloud-kafka-remote-producer/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://twitter.com/share?url=http://yoursite.com/2018/12/31/google-cloud-kafka-remote-producer/&text=如何在google cloud上新建kafka集群并且远程连接producer"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.linkedin.com/shareArticle?url=http://yoursite.com/2018/12/31/google-cloud-kafka-remote-producer/&title=如何在google cloud上新建kafka集群并且远程连接producer"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://pinterest.com/pin/create/bookmarklet/?url=http://yoursite.com/2018/12/31/google-cloud-kafka-remote-producer/&is_video=false&description=如何在google cloud上新建kafka集群并且远程连接producer"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=如何在google cloud上新建kafka集群并且远程连接producer&body=Check out this article: http://yoursite.com/2018/12/31/google-cloud-kafka-remote-producer/"><i class="fas fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://getpocket.com/save?url=http://yoursite.com/2018/12/31/google-cloud-kafka-remote-producer/&title=如何在google cloud上新建kafka集群并且远程连接producer"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://reddit.com/submit?url=http://yoursite.com/2018/12/31/google-cloud-kafka-remote-producer/&title=如何在google cloud上新建kafka集群并且远程连接producer"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.stumbleupon.com/submit?url=http://yoursite.com/2018/12/31/google-cloud-kafka-remote-producer/&title=如何在google cloud上新建kafka集群并且远程连接producer"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://digg.com/submit?url=http://yoursite.com/2018/12/31/google-cloud-kafka-remote-producer/&title=如何在google cloud上新建kafka集群并且远程连接producer"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.tumblr.com/share/link?url=http://yoursite.com/2018/12/31/google-cloud-kafka-remote-producer/&name=如何在google cloud上新建kafka集群并且远程连接producer&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4">
+        
+        <article class="post" itemscope="" itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        如何在google cloud上新建kafka集群并且远程连接producer
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+        <span itemprop="name">Nslamgg's blog</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2018-12-31T13:50:54.000Z" itemprop="datePublished">2018-12-31</time>
+        
+      
+    </div>
+
+
+      
+    <div class="article-category">
+        <i class="fas fa-archive"></i>
+        <a class="category-link" href="/categories/记坑/">记坑</a>
+    </div>
+
+
+      
+
+    </div>
+  </header>
+  
+
+  <div class="content" itemprop="articleBody">
+    <p>这里记录了如何用google cloud部署一个kafka集群，然后在本地连接它（用代码或者kafka包里的脚本）。 有一些小的坑，记录一下。 1、在google cloud platform里面点击MarketPlace，然后搜索kafka，可以看到有很多解决方案，选择Google click to deploy。 2、然后gc会自动创建一个vm，并且在里面跑一个kafka集群。你可以利用gcloud连接它或者新建标签页打开terminal。 查看下面的文档来熟悉一些kafka的基本操作，创建topic之类。 Kafka documentation: <a href="https://kafka.apache.org/10/documentation.html#quickstart\_createtopic" target="_blank" rel="noopener">https://kafka.apache.org/10/documentation.html#quickstart\_createtopic</a> 3、kafka路径在/opt/kafka。查看config/server.properties。可以看到broker默认的hostname是localhost，端口为9092。由于需要远程访问，我们需要将它的hostname改为外部IP。很奇怪，我的配置文件里是只有advertised.listeners的配置，我们需要手动添加两句 advertised.hostname = YOUR_IP; advertised.port = YOUR_PORT; 4、我同时还开启了这个VM的网络访问端口，使得它的9092端口能被访问。 5、重启kafka集群 sudo systemctl restart kafka 6、启动一个consumer kafka-console-consumer.sh –bootstrap-server localhost:9092 –topic test –from-beginning 7、在本地尝试启动producer。建议先用shell脚本连接，这样可以避免代码问题所带来的麻烦。将教程里的hostname改为vm的ip就可以了。 如果producer里输入的内容成功传送到了gc上，那么基本上就算跑完了。 8、尝试用代码跑通producer。下列文档有一个很简单的python producer的sample。 Kafka Client Sample:<a href="https://docs.confluent.io/current/clients/install.html#python-client" target="_blank" rel="noopener">https://docs.confluent.io/current/clients/install.html#python-client</a> 于是就成功的完成了在gc上创建kafka集群并且用python远程连接的操作了，主要坑点在于vm里的配置文件格式和网上略有不同、对kafka不熟，另外，本地kafka版本为0.9.0，可能会有一些坑，用代码连接出了一些问题，会堵塞住，另外在server端会爆ArrayIndexOutOfBoundsException。 github提到的issue:<a href="https://github.com/dpkp/kafka-python/issues/1103" target="_blank" rel="noopener">https://github.com/dpkp/kafka-python/issues/1103</a> Stack Overflow提到的exception: <a href="https://stackoverflow.com/questions/52983567/kafka0-9-0-0-gives-arrayindexoutofboundsexception" target="_blank" rel="noopener">https://stackoverflow.com/questions/52983567/kafka0-9-0-0-gives-arrayindexoutofboundsexception</a> 两者均是0.9.0的问题，升级到0.10以后问题解决。 FYI:我代码连接本地0.9.0启动的server会炸，但是用本地0.9.0的producer的shell脚本连接vm上的高版本kafka就没问题，可能只是和server的版本有关。 P.S: 昨天晚上调了三四个小时，今天稍微有点空就写出来纪念一下。躺在酒店床上码博客=。=马上就要跨年了，祝大家新年快乐，2019天天开心！ 2019.1.9更新： 1、需要开启谷歌vpc里的firewall，把broker的端口开放，以及zookeeper（如果有必要 2、consumer相比于producer要复杂很多，所以版本必须完全匹配（包括第二位小版本），否则很可能有坑（例如我producer连接成功了，后来尝试连接consumer却失败了）</p>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">首页</a></li>
+         
+          <li><a href="/about/">关于</a></li>
+         
+          <li><a href="/categories/随笔">随笔</a></li>
+         
+          <li><a href="/categories/记坑">记坑</a></li>
+         
+          <li><a href="/archives/">归档</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" href="http://www.facebook.com/sharer.php?u=http://yoursite.com/2018/12/31/google-cloud-kafka-remote-producer/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://twitter.com/share?url=http://yoursite.com/2018/12/31/google-cloud-kafka-remote-producer/&text=如何在google cloud上新建kafka集群并且远程连接producer"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.linkedin.com/shareArticle?url=http://yoursite.com/2018/12/31/google-cloud-kafka-remote-producer/&title=如何在google cloud上新建kafka集群并且远程连接producer"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://pinterest.com/pin/create/bookmarklet/?url=http://yoursite.com/2018/12/31/google-cloud-kafka-remote-producer/&is_video=false&description=如何在google cloud上新建kafka集群并且远程连接producer"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=如何在google cloud上新建kafka集群并且远程连接producer&body=Check out this article: http://yoursite.com/2018/12/31/google-cloud-kafka-remote-producer/"><i class="fas fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://getpocket.com/save?url=http://yoursite.com/2018/12/31/google-cloud-kafka-remote-producer/&title=如何在google cloud上新建kafka集群并且远程连接producer"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://reddit.com/submit?url=http://yoursite.com/2018/12/31/google-cloud-kafka-remote-producer/&title=如何在google cloud上新建kafka集群并且远程连接producer"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.stumbleupon.com/submit?url=http://yoursite.com/2018/12/31/google-cloud-kafka-remote-producer/&title=如何在google cloud上新建kafka集群并且远程连接producer"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://digg.com/submit?url=http://yoursite.com/2018/12/31/google-cloud-kafka-remote-producer/&title=如何在google cloud上新建kafka集群并且远程连接producer"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.tumblr.com/share/link?url=http://yoursite.com/2018/12/31/google-cloud-kafka-remote-producer/&name=如何在google cloud上新建kafka集群并且远程连接producer&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fas fa-bars fa-lg" aria-hidden="true"></i> 菜单</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fas fa-list fa-lg" aria-hidden="true"></i> 目录</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fas fa-share-alt fa-lg" aria-hidden="true"></i> 分享</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up fa-lg" aria-hidden="true"></i> 返回顶部</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy; 2019 nslam
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+         
+          <li><a href="/">首页</a></li>
+         
+          <li><a href="/about/">关于</a></li>
+         
+          <li><a href="/categories/随笔">随笔</a></li>
+         
+          <li><a href="/categories/记坑">记坑</a></li>
+         
+          <li><a href="/archives/">归档</a></li>
+        
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+</body>
+</html>
+<!-- styles -->
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+<link rel="stylesheet" href="/lib/justified-gallery/css/justifiedGallery.min.css">
+
+<!-- jquery -->
+<script src="/lib/jquery/jquery.min.js"></script>
+<script src="/lib/justified-gallery/js/jquery.justifiedGallery.min.js"></script>
+<script src="/js/main.js"></script>
+<!-- search -->
+
+<!-- Google Analytics -->
+
+<!-- Baidu Analytics -->
+
+<!-- Disqus Comments -->
+
+
