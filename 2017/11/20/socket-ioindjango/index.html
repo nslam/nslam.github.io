@@ -7,13 +7,14 @@
     <meta name="HandheldFriendly" content="True">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <meta name="description" content="最近一个项目要用到websocket，然后就选择了python-socket.io，可是对接的时候发现怎么都对接不上 把demo的整个views复制过来也没法跑，后来发现原来是wsgi.py里需要加一个中间件 from socketio import Middlewareapplication = Middleware(sio, django_app) 加了以后也就解决了 文档里其实也有提到，不过">
+<meta name="keywords" content="工程">
 <meta property="og:type" content="article">
 <meta property="og:title" content="django中应用socket.io的wsgi配置">
 <meta property="og:url" content="http://yoursite.com/2017/11/20/socket-ioindjango/index.html">
 <meta property="og:site_name" content="Nslamgg&#39;s blog">
 <meta property="og:description" content="最近一个项目要用到websocket，然后就选择了python-socket.io，可是对接的时候发现怎么都对接不上 把demo的整个views复制过来也没法跑，后来发现原来是wsgi.py里需要加一个中间件 from socketio import Middlewareapplication = Middleware(sio, django_app) 加了以后也就解决了 文档里其实也有提到，不过">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-02-03T15:51:15.728Z">
+<meta property="og:updated_time" content="2019-03-11T13:18:23.271Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="django中应用socket.io的wsgi配置">
 <meta name="twitter:description" content="最近一个项目要用到websocket，然后就选择了python-socket.io，可是对接的时候发现怎么都对接不上 把demo的整个views复制过来也没法跑，后来发现原来是wsgi.py里需要加一个中间件 from socketio import Middlewareapplication = Middleware(sio, django_app) 加了以后也就解决了 文档里其实也有提到，不过">
@@ -62,9 +63,15 @@
          
           <li><a href="/about/">关于</a></li>
          
-          <li><a href="/categories/随笔">随笔</a></li>
+          <li><a href="/ccc/">ccc</a></li>
+         
+          <li><a href="/categories/">分类</a></li>
+         
+          <li><a href="/tags/">标签</a></li>
          
           <li><a href="/categories/记坑">记坑</a></li>
+         
+          <li><a href="/categories/论文">论文</a></li>
          
           <li><a href="/archives/">归档</a></li>
         
@@ -142,6 +149,11 @@
 
 
       
+    <div class="article-tag">
+        <i class="fas fa-tag"></i>
+        <a class="tag-link" href="/tags/工程/">工程</a>
+    </div>
+
 
     </div>
   </header>
@@ -168,9 +180,15 @@
          
           <li><a href="/about/">关于</a></li>
          
-          <li><a href="/categories/随笔">随笔</a></li>
+          <li><a href="/ccc/">ccc</a></li>
+         
+          <li><a href="/categories/">分类</a></li>
+         
+          <li><a href="/tags/">标签</a></li>
          
           <li><a href="/categories/记坑">记坑</a></li>
+         
+          <li><a href="/categories/论文">论文</a></li>
          
           <li><a href="/archives/">归档</a></li>
         
@@ -220,9 +238,15 @@
          
           <li><a href="/about/">关于</a></li>
          
-          <li><a href="/categories/随笔">随笔</a></li>
+          <li><a href="/ccc/">ccc</a></li>
+         
+          <li><a href="/categories/">分类</a></li>
+         
+          <li><a href="/tags/">标签</a></li>
          
           <li><a href="/categories/记坑">记坑</a></li>
+         
+          <li><a href="/categories/论文">论文</a></li>
          
           <li><a href="/archives/">归档</a></li>
         

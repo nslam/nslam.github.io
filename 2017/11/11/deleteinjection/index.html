@@ -6,17 +6,18 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="HandheldFriendly" content="True">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <meta name="description" content="最近有些懈怠，一个多礼拜没做题了，想想有些愧疚，这样的进度离赶上大家还遥遥无期…… 注：以下内容可视为school bus的delete injection的writeup，如果想要独立做题还是尽量自己先搜索 开始正题—— 题目要求绕过过滤和WAF，获取flag表中的flag， 核心代码(PHP)： $exp = stripcslashes($exp); $sql = “delete from u">
+    <meta name="description" content="最近有些懈怠，一个多礼拜没做题了，想想有些愧疚，这样的进度离赶上大家还遥遥无期……  注：以下内容可视为school bus的delete injection的writeup，如果想要独立做题还是尽量自己先搜索  开始正题——  题目要求绕过过滤和WAF，获取flag表中的flag， 核心代码(PHP)：1$exp = stripcslashes($exp); $sql = &quot;delete fro">
+<meta name="keywords" content="ctf,security">
 <meta property="og:type" content="article">
 <meta property="og:title" content="利用delete注入来获取信息">
 <meta property="og:url" content="http://yoursite.com/2017/11/11/deleteinjection/index.html">
 <meta property="og:site_name" content="Nslamgg&#39;s blog">
-<meta property="og:description" content="最近有些懈怠，一个多礼拜没做题了，想想有些愧疚，这样的进度离赶上大家还遥遥无期…… 注：以下内容可视为school bus的delete injection的writeup，如果想要独立做题还是尽量自己先搜索 开始正题—— 题目要求绕过过滤和WAF，获取flag表中的flag， 核心代码(PHP)： $exp = stripcslashes($exp); $sql = “delete from u">
+<meta property="og:description" content="最近有些懈怠，一个多礼拜没做题了，想想有些愧疚，这样的进度离赶上大家还遥遥无期……  注：以下内容可视为school bus的delete injection的writeup，如果想要独立做题还是尽量自己先搜索  开始正题——  题目要求绕过过滤和WAF，获取flag表中的flag， 核心代码(PHP)：1$exp = stripcslashes($exp); $sql = &quot;delete fro">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-02-03T15:51:15.728Z">
+<meta property="og:updated_time" content="2019-03-11T13:35:53.263Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="利用delete注入来获取信息">
-<meta name="twitter:description" content="最近有些懈怠，一个多礼拜没做题了，想想有些愧疚，这样的进度离赶上大家还遥遥无期…… 注：以下内容可视为school bus的delete injection的writeup，如果想要独立做题还是尽量自己先搜索 开始正题—— 题目要求绕过过滤和WAF，获取flag表中的flag， 核心代码(PHP)： $exp = stripcslashes($exp); $sql = “delete from u">
+<meta name="twitter:description" content="最近有些懈怠，一个多礼拜没做题了，想想有些愧疚，这样的进度离赶上大家还遥遥无期……  注：以下内容可视为school bus的delete injection的writeup，如果想要独立做题还是尽量自己先搜索  开始正题——  题目要求绕过过滤和WAF，获取flag表中的flag， 核心代码(PHP)：1$exp = stripcslashes($exp); $sql = &quot;delete fro">
     
     
         
@@ -62,9 +63,15 @@
          
           <li><a href="/about/">关于</a></li>
          
-          <li><a href="/categories/随笔">随笔</a></li>
+          <li><a href="/ccc/">ccc</a></li>
+         
+          <li><a href="/categories/">分类</a></li>
+         
+          <li><a href="/tags/">标签</a></li>
          
           <li><a href="/categories/记坑">记坑</a></li>
+         
+          <li><a href="/categories/论文">论文</a></li>
          
           <li><a href="/archives/">归档</a></li>
         
@@ -142,13 +149,25 @@
 
 
       
+    <div class="article-tag">
+        <i class="fas fa-tag"></i>
+        <a class="tag-link" href="/tags/ctf/">ctf</a>, <a class="tag-link" href="/tags/security/">security</a>
+    </div>
+
 
     </div>
   </header>
   
 
   <div class="content" itemprop="articleBody">
-    <p>最近有些懈怠，一个多礼拜没做题了，想想有些愧疚，这样的进度离赶上大家还遥遥无期…… 注：以下内容可视为school bus的delete injection的writeup，如果想要独立做题还是尽量自己先搜索 开始正题—— 题目要求绕过过滤和WAF，获取flag表中的flag， 核心代码(PHP)： $exp = stripcslashes($exp); $sql = “delete from users where id=$id and message = ‘$exp’;”;   其实主要就是理解stripcslashes()这个函数的作用，我在搜索了以后看到w3c上写着“stripcslashes() 函数删除由 addcslashes() 函数添加的反斜杠。” ，傻傻地信了，坑了我不少时间…… 还是应该看官网<a href="http://php.net/manual/en/function.stripcslashes.php" target="_blank" rel="noopener">http://php.net/manual/en/function.stripcslashes.php</a>  主要是把C-style的字符串转换成原本的字符 这样就可以利用这个来构造转义字符串，从而绕过对单引号的过滤以及对select等敏感关键字的过滤，当然其他绕过的方式也很多，比如通过注释、大小写等等绕过，对不同的WAF有不同的策略 另外，数据库是不能识别&apos;转义的 后面的事情就是构造注入字符串了，这个delete注入虽然是构造报错信息从而获得数据，但首先语法得正确。一开始构造的语句单引号不匹配自己却一直以为会顺序执行完前面的指令……（太蠢了 在梅师傅的指导下我自己写了一个php代码来看一下我注入的到底是个什么字符串，确实方便很多 最后就是通过updatexml来获得信息了,由于和xpath这个参数类型不匹配所以会报错，再利用contact函数可以执行其中的语句并转成字符串，这样就相当于通过报错信息传递出了这个语句的执行结果，答案就出来了，具体的方法网上有很多，就不细讲了</p>
+    <p>最近有些懈怠，一个多礼拜没做题了，想想有些愧疚，这样的进度离赶上大家还遥遥无期…… </p>
+<p>注：以下内容可视为school bus的delete injection的writeup，如果想要独立做题还是尽量自己先搜索 </p>
+<p>开始正题—— </p>
+<p>题目要求绕过过滤和WAF，获取flag表中的flag， 核心代码(PHP)：<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$exp = stripcslashes($exp); $sql = <span class="string">"delete from users where id=$id and message = '$exp';"</span>;</span><br></pre></td></tr></table></figure></p>
+<p>其实主要就是理解stripcslashes()这个函数的作用，我在搜索了以后看到w3c上写着“stripcslashes() 函数删除由 addcslashes() 函数添加的反斜杠。” ，傻傻地信了，坑了我不少时间…… 还是应该看官网<a href="http://php.net/manual/en/function.stripcslashes.php" target="_blank" rel="noopener">http://php.net/manual/en/function.stripcslashes.php</a>  主要是把C-style的字符串转换成原本的字符 这样就可以利用这个来构造转义字符串，从而绕过对单引号的过滤以及对select等敏感关键字的过滤，当然其他绕过的方式也很多，比如通过注释、大小写等等绕过，对不同的WAF有不同的策略 </p>
+<p>另外，数据库是不能识别&apos;转义的 后面的事情就是构造注入字符串了，这个delete注入虽然是构造报错信息从而获得数据，但首先语法得正确。一开始构造的语句单引号不匹配自己却一直以为会顺序执行完前面的指令……（太蠢了 </p>
+<p>在梅师傅的指导下我自己写了一个php代码来看一下我注入的到底是个什么字符串，确实方便很多 </p>
+<p>最后就是通过updatexml来获得信息了,由于和xpath这个参数类型不匹配所以会报错，再利用contact函数可以执行其中的语句并转成字符串，这样就相当于通过报错信息传递出了这个语句的执行结果，答案就出来了，具体的方法网上有很多，就不细讲了</p>
 
   </div>
 </article>
@@ -166,9 +185,15 @@
          
           <li><a href="/about/">关于</a></li>
          
-          <li><a href="/categories/随笔">随笔</a></li>
+          <li><a href="/ccc/">ccc</a></li>
+         
+          <li><a href="/categories/">分类</a></li>
+         
+          <li><a href="/tags/">标签</a></li>
          
           <li><a href="/categories/记坑">记坑</a></li>
+         
+          <li><a href="/categories/论文">论文</a></li>
          
           <li><a href="/archives/">归档</a></li>
         
@@ -218,9 +243,15 @@
          
           <li><a href="/about/">关于</a></li>
          
-          <li><a href="/categories/随笔">随笔</a></li>
+          <li><a href="/ccc/">ccc</a></li>
+         
+          <li><a href="/categories/">分类</a></li>
+         
+          <li><a href="/tags/">标签</a></li>
          
           <li><a href="/categories/记坑">记坑</a></li>
+         
+          <li><a href="/categories/论文">论文</a></li>
          
           <li><a href="/archives/">归档</a></li>
         
